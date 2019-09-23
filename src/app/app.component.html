@@ -1,20 +1,170 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<div class="header">
+  <div class="container">
 
+    <div class="form-group">
+      <mat-form-field>
+        <input matInput placeholder="Account Budget"
+          type          = "number"
+          #bucketBudget = "ngModel"
+          [(ngModel)]   = "maxAccountBudget"
+        >
+      </mat-form-field>
+    </div> 
+
+    <div class="form-group">
+      <p>{{ accountBudget | number:'.2'}}USD</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+    <!-- [ngClass]   = "{'is-invalid': bucketName.errors && (bucketName.dirty || bucketName.touched)}" -->
+  <div class="row align-items-center">
+    <div class="col-8">
+
+      <ng-form #bpForm="ngForm">
+        <mat-accordion>
+          <mat-expansion-panel 
+            *ngFor     = "let bucket of buckets; index as index; first as first"
+            [expanded] = "bucket.isExpanded"
+            [disabled] = "!bpForm.valid"
+            (afterCollapse) = "toggleExpandedBucket(index, false)"
+            (afterExpand)   = "toggleExpandedBucket(index, true)"
+          >
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ bucket.name }}</mat-panel-title>
+              <mat-panel-description>{{ bucket.budget | number:'0.2' || 0 }}USD</mat-panel-description>
+            </mat-expansion-panel-header>
+            
+            <ng-template matExpansionPanelContent>
+              <div class="panel-content row">
+                
+                <div class="form-group col">
+                  <mat-form-field>
+                    <input matInput placeholder="Name"
+                      type        = "text"
+                      name        = "buckets[{{ index }}].name"
+                      #bucketName = "ngModel"
+                      [(ngModel)] = "bucket.name"
+                      required
+                    >
+                    <mat-error *ngIf="bucketName.invalid">{{ bucketName.errors | json }}</mat-error>
+                  </mat-form-field>
+                </div>  
+
+                <div class="form-group col">
+                  <mat-form-field>
+                    <input matInput placeholder="Budget"
+                      type          = "number"
+                      name          = "buckets[{{ index }}].budget"
+                      #bucketBudget = "ngModel"
+                      [(ngModel)]   = "bucket.budget"
+                      (keyup)       = "recalculateAccountBudget()"
+                      required
+                      [range]="[1, maxAccountBudget - accountBudget + bucketBudget.value]"
+                    >
+                    <mat-error *ngIf="bucketBudget.invalid">{{ bucketBudget.errors | json }}</mat-error>
+                  </mat-form-field>
+                </div> 
+
+                <div class="form-group col">
+                  <mat-form-field>
+                    <mat-select placeholder="Optimization Settings" 
+                      name        = "buckets[{{ index }}].opt"
+                      #bucketOpt  = "ngModel"
+                      [(ngModel)] = "bucket.opt"
+                      (ngModelChange)    = "onBiddingChange(bucket, index)"
+                      required
+                    >
+                      <mat-option value="A">Option A</mat-option>
+                      <mat-option value="B">Option B</mat-option>
+                      <mat-option value="C">Option C</mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="bucketOpt.invalid">{{ bucketOpt.errors | json }}</mat-error>
+                  </mat-form-field>
+                </div> 
+
+              </div>
+
+              <div class="bidding-container" *ngIf="bucket.opt !== null">
+                <div class="row"  *ngIf="bucket.opt == 'A'">
+                  <div class="form-group col">
+                    <mat-form-field>
+                      <input matInput placeholder="Text Test"
+                        type               = "text"
+                        name               = "buckets[{{ index }}].bidding.text"
+                        #bucketBiddingText = "ngModel"
+                        [(ngModel)]        = "bucket.bidding.text"
+                        required
+                      >
+                      <mat-error *ngIf="bucketBiddingText.invalid">{{ bucketBiddingText.errors | json }}</mat-error>
+                    </mat-form-field>
+                  </div>  
+
+                  <div class="form-group col">
+                    <mat-form-field>
+                      <input matInput placeholder="Number Test"
+                        type                 = "number"
+                        name                 = "buckets[{{ index }}].bidding.number"
+                        #bucketBiddingNumber = "ngModel"
+                        [(ngModel)]          = "bucket.bidding.number"
+                        required
+                        max = "10"
+                      >
+                      <mat-error *ngIf="bucketBiddingNumber.invalid">{{ bucketBiddingNumber.errors | json }}</mat-error>
+                    </mat-form-field>
+                  </div> 
+                </div>
+
+                <div class="row" *ngIf="bucket.opt == 'B'">
+                  <div class="form-group col">
+                    <mat-form-field>
+                      <mat-select placeholder="Select Test" 
+                        name                 = "buckets[{{ index }}].bidding.select"
+                        #bucketBiddingSelect = "ngModel"
+                        [(ngModel)]          = "bucket.bidding.select"
+                        required
+                      >
+                        <mat-option value="1">Option 1</mat-option>
+                        <mat-option value="2">Option 2</mat-option>
+                        <mat-option value="3">Option 3</mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="bucketBiddingSelect.invalid">{{ bucketBiddingSelect.errors | json }}</mat-error>
+                    </mat-form-field>
+                  </div> 
+
+                  <div class="form-group col">
+                    <mat-checkbox
+                      name                = "buckets[{{ index }}].bidding.check"
+                      #bucketBiddingCheck = "ngModel"
+                      [(ngModel)]         = "bucket.bidding.check"
+                    >Checkbox Test</mat-checkbox>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+
+            
+            <mat-action-row *ngIf="buckets.length > 1">
+              <button mat-button color="warn" (click)="deleteBucket(index)">Delete <mat-icon>delete</mat-icon></button>
+            </mat-action-row>
+          </mat-expansion-panel>
+        </mat-accordion>
+
+        <p><button mat-raised-button color = "primary"
+          [disabled] = "bpForm.invalid"
+          (click)    = "addBucket()"
+        >Add Bucket</button></p>
+      </ng-form>
+    </div>
+
+    <div class="col-4">
+      <div highlightChildren class="children">
+        <h4>Buckets</h4>
+        <pre><code [highlight]="buckets | json" language="json"></code></pre>
+        <h4>isValid</h4>
+        <pre><code [highlight]="bpForm.valid | json" language="json"></code></pre>
+      </div>
+    </div>
+  </div>
+</div>

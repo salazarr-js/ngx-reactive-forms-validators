@@ -1,0 +1,31 @@
+:host {
+  height          : 100vh;
+  margin          : 0;
+  padding         : 16px 0;
+  display         : flex;
+  align-items     : center;
+  flex-direction  : column;
+  justify-content : center;
+}
+
+.header {
+  background-color: #FAFAFA;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  .container {
+    display         : flex;
+    align-items     : center;
+    justify-content : flex-end;
+    .form-group {
+      padding: 0 16px;
+    }
+  }
+}
+
+.bidding-container {
+  padding          : 16px;
+  background-color : #FAFAFA;
+}
+
